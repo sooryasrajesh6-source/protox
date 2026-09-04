@@ -1,2196 +1,1394 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>PROTOX | Inside the Circuit Board</title>
-
-    <style>
-
-        /* =========================
-           RESET
-        ========================= */
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Segoe UI", Arial, sans-serif;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background: #050505;
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-
-        /* =========================
-           BACKGROUND
-        ========================= */
-
-        #bgCanvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -3;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PROTOX³ | Inside the Circuit Board</title>
+
+<meta name="description"
+content="PROTOX³ - Inside the Circuit Board. One-Day Technical Workshop on PCB Design and LTspice Circuit Simulation.">
+
+<style>
+
+:root{
+    --red:#ff2020;
+    --red-dark:#b80000;
+    --black:#050505;
+    --panel:#0d0d0d;
+    --panel2:#111111;
+    --white:#ffffff;
+    --gray:#999999;
+    --border:rgba(255,32,32,.25);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:
+        "Segoe UI",
+        Arial,
+        Helvetica,
+        sans-serif;
 
-            background-image:
-                linear-gradient(
-                    rgba(255,0,0,0.04) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(255,0,0,0.04) 1px,
-                    transparent 1px
-                );
+    background:#050505;
+    color:white;
+    overflow-x:hidden;
+}
 
-            background-size: 45px 45px;
+/* =========================
+   BACKGROUND
+========================= */
 
-            pointer-events: none;
-            z-index: -2;
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
 
-            animation: gridPan 20s linear infinite;
-        }
+    background-image:
+        linear-gradient(
+            rgba(255,0,0,.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,0,0,.035) 1px,
+            transparent 1px
+        );
 
-        @keyframes gridPan {
+    background-size:45px 45px;
 
-            from {
-                background-position: 0 0;
-            }
+    z-index:-10;
+}
 
-            to {
-                background-position: 45px 45px;
-            }
+body::after{
+    content:"";
 
-        }
+    position:fixed;
 
+    width:500px;
+    height:500px;
 
-        .glow-orb {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
+    right:-200px;
+    top:-200px;
 
-            pointer-events: none;
-            z-index: -1;
+    border-radius:50%;
 
-            animation:
-                orbFloat 12s ease-in-out infinite alternate;
-        }
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,0,0,.18),
+            transparent 70%
+        );
 
-        .glow-orb-1 {
-            top: -150px;
-            right: -150px;
+    z-index:-9;
+}
 
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(255,0,0,0.15),
-                    transparent 70%
-                );
-        }
+#circuitCanvas{
+    position:fixed;
+    inset:0;
 
-        .glow-orb-2 {
-            bottom: -200px;
-            left: -150px;
+    width:100%;
+    height:100%;
 
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(255,0,0,0.10),
-                    transparent 70%
-                );
+    pointer-events:none;
 
-            animation-delay: -6s;
-        }
+    z-index:-8;
+}
 
-        @keyframes orbFloat {
+/* =========================
+   GENERAL
+========================= */
 
-            0% {
-                transform: translate(0,0) scale(1);
-            }
+.container{
+    width:min(1180px,90%);
+    margin:auto;
+}
 
-            50% {
-                transform: translate(-60px,80px) scale(1.2);
-            }
+section{
+    padding:110px 0;
+}
 
-            100% {
-                transform: translate(40px,-40px) scale(0.9);
-            }
+a{
+    color:inherit;
+}
 
-        }
+/* =========================
+   NAVBAR
+========================= */
 
+.navbar{
 
-        /* =========================
-           NAVBAR
-        ========================= */
+    position:fixed;
 
-        nav {
-            position: fixed;
+    top:0;
+    left:0;
 
-            top: 0;
-            left: 0;
+    width:100%;
+    height:82px;
 
-            width: 100%;
-            height: 80px;
+    padding:0 4%;
 
-            padding: 0 5%;
+    display:flex;
+    align-items:center;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    gap:25px;
 
-            background: rgba(5,5,5,0.85);
+    background:rgba(3,3,3,.88);
 
-            backdrop-filter: blur(12px);
+    backdrop-filter:blur(15px);
 
-            border-bottom:
-                1px solid rgba(255,0,0,0.2);
+    border-bottom:
+        1px solid rgba(255,0,0,.25);
 
-            z-index: 1000;
+    z-index:1000;
 
-            transition: 0.4s;
-        }
+    transition:.3s;
+}
 
+/* PROTOX logo */
 
-        .brand-container {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+.nav-logo{
+    display:flex;
+    align-items:center;
 
+    flex-shrink:0;
+}
 
-        .protox-logo-svg {
-            width: 42px;
-            height: 42px;
+.nav-logo img{
 
-            filter:
-                drop-shadow(
-                    0 0 8px rgba(255,0,0,0.8)
-                );
+    width:145px;
+    height:55px;
 
-            animation:
-                logoGlow 3s infinite alternate;
-        }
+    object-fit:contain;
 
+    display:block;
 
-        @keyframes logoGlow {
+    /*
+       PROTOX ONLY
+       Red theme glow
+    */
 
-            from {
-                filter:
-                    drop-shadow(
-                        0 0 5px rgba(255,0,0,0.6)
-                    );
-            }
+    filter:
+        drop-shadow(
+            0 0 8px
+            rgba(255,0,0,.45)
+        );
+}
 
-            to {
-                filter:
-                    drop-shadow(
-                        0 0 15px rgba(255,0,0,1)
-                    );
-            }
+/* Organization logos */
 
-        }
+.organization-logos{
 
+    display:flex;
 
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 2px;
-        }
+    align-items:center;
+    justify-content:center;
 
-        .logo span {
-            color: #ff1a1a;
-        }
+    gap:10px;
 
+    flex:1;
 
-        .nav-partner-logos {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+    min-width:0;
+}
 
-            border-left:
-                1px solid rgba(255,255,255,0.15);
+.organization-logos img{
 
-            padding-left: 15px;
-        }
+    height:42px;
 
+    width:auto;
 
-        .partner-logo {
-            height: 26px;
-            max-width: 85px;
+    max-width:170px;
 
-            object-fit: contain;
+    object-fit:contain;
 
-            filter:
-                brightness(0) invert(1);
+    background:#fff;
 
-            opacity: 0.8;
-        }
+    border-radius:5px;
 
+    padding:3px;
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 22px;
-        }
+    /*
+       IMPORTANT:
+       No filter here.
+       Original colors remain unchanged.
+    */
 
+    filter:none;
+}
 
-        nav a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 14px;
+.organization-logos .ieee{
+    max-width:75px;
+}
 
-            transition: 0.3s;
+.organization-logos .sps{
+    max-width:130px;
+}
 
-            position: relative;
-        }
+.organization-logos .jcmc{
+    max-width:190px;
+}
 
+/* Navigation */
 
-        nav ul a::after {
-            content: "";
+.nav-links{
 
-            position: absolute;
+    display:flex;
 
-            width: 0;
-            height: 2px;
+    align-items:center;
 
-            bottom: -6px;
-            left: 50%;
+    gap:20px;
 
-            background: #ff2020;
+    list-style:none;
+}
 
-            box-shadow:
-                0 0 8px #ff2020;
+.nav-links a{
 
-            transform:
-                translateX(-50%);
+    text-decoration:none;
 
-            transition: 0.3s;
-        }
+    color:#ddd;
 
+    font-size:13px;
 
-        nav ul a:hover::after {
-            width: 100%;
-        }
+    font-weight:700;
 
+    transition:.3s;
+}
 
-        nav ul a:hover {
-            color: #ff2020;
-        }
+.nav-links a:hover{
+    color:var(--red);
+}
 
+.nav-register{
 
-        .nav-btn {
-            background: #e60000;
+    background:var(--red);
 
-            padding: 10px 18px;
+    color:white !important;
 
-            border-radius: 5px;
+    padding:11px 17px;
 
-            color: white !important;
+    border-radius:5px;
 
-            font-weight: 700;
+    box-shadow:
+        0 0 20px
+        rgba(255,0,0,.25);
+}
 
-            box-shadow:
-                0 0 15px rgba(255,0,0,0.3);
+/* Mobile menu */
 
-            transition: 0.3s;
-        }
+.menu-button{
+    display:none;
 
+    font-size:27px;
 
-        .nav-btn:hover {
-            background: #ff2929;
+    cursor:pointer;
+}
 
-            transform:
-                translateY(-2px);
+/* =========================
+   HERO
+========================= */
 
-            box-shadow:
-                0 0 25px rgba(255,0,0,0.6);
-        }
+.hero{
 
+    min-height:100vh;
 
-        /* =========================
-           HERO
-        ========================= */
+    padding:
+        145px 0
+        70px;
 
-        .hero {
-            min-height: 100vh;
+    display:flex;
 
-            display: flex;
-            align-items: center;
+    align-items:center;
 
-            padding:
-                120px 8% 70px;
+    position:relative;
+}
 
-            position: relative;
-        }
+.hero-grid{
 
+    display:grid;
 
-        .hero-content {
-            max-width: 800px;
+    grid-template-columns:
+        1.05fr .95fr;
 
-            animation:
-                heroIn 1.2s ease forwards;
-        }
+    gap:55px;
 
+    align-items:center;
+}
 
-        @keyframes heroIn {
+.hero-badge{
 
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
+    display:inline-block;
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+    padding:8px 15px;
 
-        }
+    border:
+        1px solid
+        var(--red);
 
+    color:#ff5555;
 
-        .tag {
-            display: inline-flex;
+    border-radius:30px;
 
-            align-items: center;
-            gap: 8px;
+    font-size:11px;
 
-            border:
-                1px solid #ff1717;
+    font-weight:900;
 
-            color: #ff3a3a;
+    letter-spacing:3px;
 
-            padding: 8px 16px;
+    background:
+        rgba(255,0,0,.05);
 
-            border-radius: 30px;
+    margin-bottom:25px;
+}
 
-            font-size: 13px;
+.hero h1{
 
-            font-weight: 700;
+    font-size:
+        clamp(60px,9vw,110px);
 
-            letter-spacing: 1px;
+    line-height:.85;
 
-            margin-bottom: 25px;
+    letter-spacing:-6px;
 
-            background:
-                rgba(255,0,0,0.06);
+    font-weight:950;
+}
 
-            box-shadow:
-                0 0 15px rgba(255,0,0,0.15);
-        }
+.hero h1 span{
 
+    color:var(--red);
 
-        .hero h1 {
-            font-size:
-                clamp(60px, 9vw, 110px);
+    text-shadow:
+        0 0 30px
+        rgba(255,0,0,.55);
+}
 
-            line-height: 0.9;
+.hero h2{
 
-            font-weight: 900;
+    margin-top:28px;
 
-            letter-spacing: -5px;
-        }
+    font-size:
+        clamp(22px,3vw,34px);
 
+    font-weight:500;
 
-        .hero h1 span {
-            color: #ff1111;
+    color:#ddd;
+}
 
-            text-shadow:
-                0 0 20px rgba(255,0,0,0.5),
-                0 0 50px rgba(255,0,0,0.2);
-        }
+.hero-description{
 
+    max-width:650px;
 
-        .hero h2 {
-            margin-top: 25px;
+    margin-top:20px;
 
-            font-size:
-                clamp(20px, 3vw, 30px);
+    color:#999;
 
-            color: #ddd;
+    line-height:1.8;
 
-            font-weight: 500;
-        }
+    font-size:16px;
+}
 
+.hero-buttons{
 
-        .hero-description {
-            margin-top: 20px;
+    display:flex;
 
-            max-width: 650px;
+    gap:15px;
 
-            color: #999;
+    flex-wrap:wrap;
 
-            font-size: 16px;
+    margin-top:32px;
+}
 
-            line-height: 1.8;
-        }
+.btn{
 
+    display:inline-flex;
 
-        .hero-buttons {
-            display: flex;
+    align-items:center;
 
-            gap: 15px;
+    justify-content:center;
 
-            margin-top: 35px;
+    padding:14px 24px;
 
-            flex-wrap: wrap;
-        }
+    border-radius:5px;
 
+    text-decoration:none;
 
-        .btn {
-            padding: 14px 28px;
+    font-weight:800;
 
-            border-radius: 5px;
+    transition:.3s;
+}
 
-            text-decoration: none;
+.btn-red{
 
-            font-weight: 800;
+    background:var(--red);
 
-            display: inline-flex;
+    box-shadow:
+        0 0 25px
+        rgba(255,0,0,.25);
+}
 
-            align-items: center;
+.btn-red:hover{
 
-            justify-content: center;
+    transform:
+        translateY(-4px);
 
-            gap: 8px;
+    box-shadow:
+        0 12px 35px
+        rgba(255,0,0,.4);
+}
 
-            transition: 0.3s;
+.btn-outline{
 
-            cursor: pointer;
-        }
+    border:
+        1px solid
+        #555;
 
+    background:#080808;
+}
 
-        .btn-red {
-            background: #e60000;
-            color: white;
+.btn-outline:hover{
 
-            box-shadow:
-                0 0 25px rgba(255,0,0,0.3);
-        }
+    border-color:var(--red);
 
+    color:var(--red);
+}
 
-        .btn-red:hover {
-            transform:
-                translateY(-4px);
+/* Hero logo */
 
-            background: #ff2020;
+.hero-logo{
 
-            box-shadow:
-                0 10px 30px rgba(255,0,0,0.5);
-        }
+    display:flex;
 
+    align-items:center;
 
-        .btn-outline {
-            border:
-                1px solid #555;
+    justify-content:center;
+}
 
-            color: #fff;
+.hero-logo img{
 
-            background:
-                rgba(0,0,0,0.4);
-        }
+    width:
+        min(470px,90%);
 
+    height:auto;
 
-        .btn-outline:hover {
-            border-color: #e60000;
+    border-radius:18px;
 
-            color: #ff2929;
+    /*
+       PROTOX theme glow
+    */
 
-            transform:
-                translateY(-4px);
-        }
+    filter:
+        drop-shadow(
+            0 0 25px
+            rgba(255,0,0,.35)
+        );
 
+    animation:
+        floatingLogo 5s
+        ease-in-out infinite;
+}
 
-        .hero-partners {
-            margin-top: 45px;
+@keyframes floatingLogo{
 
-            padding-top: 25px;
+    0%,100%{
+        transform:translateY(0);
+    }
 
-            border-top:
-                1px solid rgba(255,255,255,0.1);
-        }
+    50%{
+        transform:translateY(-12px);
+    }
+}
 
+/* Hero information */
 
-        .hero-partners p {
-            font-size: 12px;
+.hero-info{
 
-            color: #777;
+    display:flex;
 
-            text-transform: uppercase;
+    flex-wrap:wrap;
 
-            letter-spacing: 2px;
+    gap:35px;
 
-            margin-bottom: 15px;
-        }
+    margin-top:38px;
 
+    padding-top:23px;
 
-        .hero-partner-grid {
-            display: flex;
+    border-top:
+        1px solid
+        rgba(255,255,255,.1);
+}
 
-            gap: 30px;
+.hero-info strong{
 
-            align-items: center;
+    display:block;
 
-            flex-wrap: wrap;
-        }
+    font-size:17px;
+}
 
+.hero-info small{
 
-        .hero-partner-logo {
-            height: 35px;
+    color:#777;
 
-            max-width: 120px;
+    font-size:10px;
 
-            object-fit: contain;
+    letter-spacing:2px;
+}
 
-            filter:
-                brightness(0) invert(1);
+/* =========================
+   SECTION TITLES
+========================= */
 
-            opacity: 0.7;
-        }
+.section-heading{
 
+    text-align:center;
 
-        /* =========================
-           HERO CIRCUIT
-        ========================= */
+    margin-bottom:55px;
+}
 
-        .circuit {
-            position: absolute;
+.section-heading small{
 
-            right: 5%;
-            top: 22%;
+    color:#ff4545;
 
-            width: 380px;
-            height: 380px;
+    font-size:11px;
 
-            animation:
-                circuitFloat
-                8s ease-in-out
-                infinite alternate;
-        }
+    letter-spacing:4px;
 
+    font-weight:900;
+}
 
-        @keyframes circuitFloat {
+.section-heading h2{
 
-            from {
-                transform: translateY(0);
-            }
+    font-size:
+        clamp(35px,5vw,55px);
 
-            to {
-                transform: translateY(-20px);
-            }
+    margin-top:10px;
+}
 
-        }
+.section-heading p{
 
+    max-width:650px;
 
-        .chip {
-            position: absolute;
+    margin:
+        15px auto;
 
-            width: 140px;
-            height: 140px;
+    color:#888;
 
-            left: 120px;
-            top: 120px;
+    line-height:1.7;
+}
 
-            border:
-                3px solid #ff0000;
+/* =========================
+   WORKSHOP
+========================= */
 
-            background: #0b0b0b;
+.workshop-grid{
 
-            box-shadow:
-                0 0 30px rgba(255,0,0,0.4),
-                inset 0 0 25px rgba(255,0,0,0.15);
+    display:grid;
 
-            display: flex;
+    grid-template-columns:
+        repeat(2,1fr);
 
-            justify-content: center;
-            align-items: center;
+    gap:25px;
+}
 
-            font-size: 22px;
+.workshop-card{
 
-            font-weight: 900;
+    position:relative;
 
-            color: #ff2020;
+    overflow:hidden;
 
-            letter-spacing: 2px;
-        }
+    padding:35px;
 
+    background:
+        linear-gradient(
+            145deg,
+            #111,
+            #070707
+        );
 
-        .trace {
-            position: absolute;
+    border:
+        1px solid
+        var(--border);
 
-            background: #ff0000;
+    border-radius:15px;
 
-            box-shadow:
-                0 0 10px #ff0000;
-        }
+    transition:.3s;
+}
 
+.workshop-card:hover{
 
-        .t1 {
-            width: 120px;
-            height: 2px;
+    transform:
+        translateY(-8px);
 
-            top: 145px;
-            left: 0;
-        }
+    border-color:
+        rgba(255,0,0,.7);
 
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,.5);
+}
 
-        .t2 {
-            width: 2px;
-            height: 120px;
+.workshop-card::before{
 
-            top: 0;
-            left: 145px;
-        }
+    content:"";
 
+    position:absolute;
 
-        .t3 {
-            width: 120px;
-            height: 2px;
+    top:0;
+    left:0;
 
-            top: 233px;
-            right: 0;
-        }
+    width:80px;
+    height:2px;
 
+    background:var(--red);
 
-        .t4 {
-            width: 2px;
-            height: 120px;
+    box-shadow:
+        0 0 15px
+        var(--red);
+}
 
-            bottom: 0;
-            left: 233px;
-        }
+.track{
 
+    color:#ff4545;
 
-        .signal {
-            position: absolute;
+    font-size:11px;
 
-            width: 8px;
-            height: 8px;
+    letter-spacing:3px;
 
-            background: white;
+    font-weight:900;
+}
 
-            border-radius: 50%;
+.workshop-card h3{
 
-            box-shadow:
-                0 0 10px white,
-                0 0 20px red;
-        }
+    font-size:28px;
 
+    margin:
+        12px 0
+        15px;
+}
 
-        .s1 {
-            top: -3px;
-            left: 0;
+.workshop-card p{
 
-            animation:
-                sigH 2s linear infinite;
-        }
+    color:#999;
 
+    line-height:1.75;
+}
 
-        .s2 {
-            top: 0;
-            left: -3px;
+.features{
 
-            animation:
-                sigV 2.5s linear infinite;
-        }
+    list-style:none;
 
+    margin-top:22px;
 
-        .s3 {
-            top: -3px;
-            right: 0;
+    display:grid;
 
-            animation:
-                sigHR 2.2s linear infinite;
-        }
+    gap:11px;
+}
 
+.features li{
 
-        .s4 {
-            bottom: 0;
-            left: -3px;
+    color:#ccc;
+}
 
-            animation:
-                sigVR 1.8s linear infinite;
-        }
+.features li::before{
 
+    content:"✓";
 
-        @keyframes sigH {
+    color:var(--red);
 
-            from {
-                left: 0;
-                opacity: 1;
-            }
+    font-weight:900;
 
-            to {
-                left: 120px;
-                opacity: 0;
-            }
+    margin-right:10px;
+}
 
-        }
+/* =========================
+   SESSIONS
+========================= */
 
+.schedule{
 
-        @keyframes sigV {
+    border:
+        1px solid
+        var(--border);
 
-            from {
-                top: 0;
-                opacity: 1;
-            }
+    border-radius:14px;
 
-            to {
-                top: 120px;
-                opacity: 0;
-            }
+    overflow:hidden;
+}
 
-        }
+.schedule-row{
 
+    display:grid;
 
-        @keyframes sigHR {
+    grid-template-columns:
+        190px 1fr;
 
-            from {
-                right: 0;
-                opacity: 1;
-            }
+    padding:24px;
 
-            to {
-                right: 120px;
-                opacity: 0;
-            }
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.07);
+}
 
-        }
+.schedule-row:last-child{
+    border-bottom:none;
+}
 
+.schedule-row time{
 
-        @keyframes sigVR {
+    color:#ff4040;
 
-            from {
-                bottom: 0;
-                opacity: 1;
-            }
+    font-weight:900;
 
-            to {
-                bottom: 120px;
-                opacity: 0;
-            }
+    font-size:13px;
 
-        }
+    letter-spacing:1px;
+}
 
+.schedule-row strong{
+    color:white;
+}
 
-        .node {
-            position: absolute;
+.schedule-row span{
+    color:#888;
+    line-height:1.7;
+}
 
-            width: 10px;
-            height: 10px;
+/* =========================
+   SPEAKERS
+========================= */
 
-            background: #ff0000;
+.speaker-grid{
 
-            border-radius: 50%;
+    display:grid;
 
-            box-shadow:
-                0 0 15px red;
+    grid-template-columns:
+        repeat(2,1fr);
 
-            animation:
-                nodeBlink
-                1.5s
-                infinite alternate;
-        }
+    gap:25px;
+}
 
+.speaker-card{
 
-        .n1 {
-            left: 45px;
-            top: 141px;
-        }
+    display:grid;
 
+    grid-template-columns:
+        170px 1fr;
 
-        .n2 {
-            left: 141px;
-            top: 45px;
-        }
+    gap:25px;
 
+    align-items:center;
 
-        .n3 {
-            right: 45px;
-            top: 229px;
-        }
+    background:#0b0b0b;
 
+    border:
+        1px solid
+        var(--border);
 
-        .n4 {
-            left: 229px;
-            bottom: 45px;
-        }
+    border-radius:15px;
 
+    padding:20px;
 
-        @keyframes nodeBlink {
+    transition:.3s;
+}
 
-            from {
-                transform: scale(.7);
-                opacity: .4;
-            }
+.speaker-card:hover{
 
-            to {
-                transform: scale(1.4);
-                opacity: 1;
-            }
+    transform:
+        translateY(-6px);
 
-        }
+    border-color:
+        rgba(255,0,0,.6);
+}
 
+.speaker-card img{
 
-        /* =========================
-           GENERAL SECTIONS
-        ========================= */
+    width:170px;
 
-        section {
-            padding: 100px 8%;
-            position: relative;
-        }
+    height:210px;
 
+    object-fit:cover;
 
-        .section-title {
-            text-align: center;
+    border-radius:10px;
 
-            margin-bottom: 55px;
-        }
+    display:block;
+}
 
+.speaker-card h3{
 
-        .section-title small {
-            color: #ff2020;
+    font-size:26px;
+}
 
-            text-transform: uppercase;
+.speaker-role{
 
-            letter-spacing: 3px;
+    color:#ff4141;
 
-            font-weight: 800;
-        }
+    font-weight:800;
 
+    line-height:1.6;
 
-        .section-title h2 {
-            font-size: 45px;
+    margin:
+        8px 0
+        14px;
+}
 
-            margin-top: 8px;
+.speaker-description{
 
-            background:
-                linear-gradient(#fff,#999);
+    color:#999;
 
-            -webkit-background-clip: text;
+    line-height:1.7;
+}
 
-            -webkit-text-fill-color: transparent;
-        }
+/* =========================
+   PRICING
+========================= */
 
+.pricing-grid{
 
-        .section-title p {
-            color: #888;
+    display:grid;
 
-            margin-top: 12px;
-        }
+    grid-template-columns:
+        repeat(3,1fr);
 
+    gap:20px;
+}
 
-        /* =========================
-           OVERVIEW
-        ========================= */
+.price-card{
 
-        .info-grid {
-            display: grid;
+    background:#0b0b0b;
 
-            grid-template-columns:
-                repeat(3,1fr);
+    border:
+        1px solid
+        var(--border);
 
-            gap: 25px;
-        }
+    border-radius:15px;
 
+    padding:30px;
 
-        .info-card {
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(20,20,20,.9),
-                    rgba(8,8,8,.95)
-                );
+    text-align:center;
 
-            border:
-                1px solid #242424;
+    transition:.3s;
+}
 
-            padding: 40px 30px;
+.price-card:hover{
 
-            border-radius: 12px;
+    transform:
+        translateY(-6px);
 
-            text-align: center;
+    border-color:
+        rgba(255,0,0,.6);
+}
 
-            transition: .4s;
-        }
+.price-card.featured{
 
+    border-color:var(--red);
 
-        .info-card:hover {
-            transform:
-                translateY(-10px);
+    box-shadow:
+        0 0 30px
+        rgba(255,0,0,.12);
+}
 
-            border-color:
-                rgba(255,0,0,.5);
+.member-type{
 
-            box-shadow:
-                0 20px 40px rgba(255,0,0,.15);
-        }
+    color:#ff4141;
 
+    font-size:10px;
 
-        .icon {
-            font-size: 42px;
+    font-weight:900;
 
-            margin-bottom: 20px;
-        }
+    letter-spacing:2px;
+}
 
+.price-card h3{
 
-        .info-card h3 {
-            margin-bottom: 12px;
+    font-size:21px;
 
-            font-size: 22px;
-        }
+    margin-top:10px;
+}
 
+.price{
 
-        .info-card p {
-            color: #888;
+    margin:18px 0;
 
-            line-height: 1.6;
-        }
+    color:#aaa;
 
+    font-size:17px;
+}
 
-        /* =========================
-           WORKSHOPS
-        ========================= */
+.price strong{
 
-        .workshop-heading {
-            text-align: center;
+    color:white;
 
-            margin-bottom: 50px;
-        }
+    font-size:48px;
+}
 
+.price-card p{
 
-        .workshop-heading .number {
-            display: inline-block;
+    color:#888;
 
-            color: #ff2020;
+    line-height:1.6;
+}
 
-            font-size: 14px;
+/* =========================
+   SEATS
+========================= */
 
-            font-weight: 900;
+.seats-box{
 
-            letter-spacing: 3px;
+    margin-top:35px;
 
-            margin-bottom: 10px;
-        }
+    padding:35px;
 
+    text-align:center;
 
-        .workshop-heading h2 {
-            font-size:
-                clamp(38px,5vw,60px);
-        }
+    border:
+        1px solid
+        rgba(255,0,0,.3);
 
+    border-radius:15px;
 
-        .workshop-heading p {
-            color: #888;
+    background:
+        rgba(255,0,0,.03);
+}
 
-            margin-top: 12px;
-        }
+.seat-number{
 
+    color:#ff2020;
 
-        .workshop {
-            background:
-                rgba(8,8,8,.65);
-        }
+    font-size:60px;
 
+    font-weight:950;
+}
 
-        .workshop-grid {
-            display: grid;
+.seat-title{
 
-            grid-template-columns:
-                1fr 1fr;
+    color:#aaa;
 
-            gap: 50px;
+    letter-spacing:2px;
 
-            align-items: center;
-        }
+    font-size:11px;
+}
 
+.progress{
 
-        .workshop-image {
-            height: 430px;
+    max-width:600px;
 
-            border-radius: 16px;
+    height:8px;
 
-            border:
-                1px solid #333;
+    margin:
+        20px auto;
 
-            display: flex;
+    background:#1b1b1b;
 
-            justify-content: center;
+    border-radius:20px;
 
-            align-items: center;
+    overflow:hidden;
+}
 
-            position: relative;
+.progress-bar{
 
-            overflow: hidden;
+    width:100%;
 
-            background:
-                radial-gradient(
-                    circle at center,
-                    rgba(255,0,0,.2),
-                    transparent 55%
-                ),
-                linear-gradient(
-                    135deg,
-                    #111,
-                    #050505
-                );
-        }
+    height:100%;
 
+    background:
+        linear-gradient(
+            90deg,
+            #800000,
+            #ff2020
+        );
 
-        .workshop-image::before {
-            content: "";
+    box-shadow:
+        0 0 15px
+        #ff0000;
+}
 
-            position: absolute;
+.registration-note{
 
-            top: 0;
-            left: -100%;
+    color:#666;
 
-            width: 50%;
-            height: 100%;
+    font-size:11px;
 
-            background:
-                linear-gradient(
-                    90deg,
-                    transparent,
-                    rgba(255,0,0,.2),
-                    transparent
-                );
+    margin-top:15px;
+}
 
-            transform:
-                skewX(-25deg);
+/* =========================
+   ORGANIZERS
+========================= */
 
-            animation:
-                laserScan 6s infinite;
-        }
+.organizers{
 
+    display:flex;
 
-        @keyframes laserScan {
+    justify-content:center;
 
-            0%,100% {
-                left: -100%;
-            }
+    align-items:center;
 
-            50% {
-                left: 200%;
-            }
+    flex-wrap:wrap;
 
-        }
+    gap:28px;
+}
 
+.organization-card{
 
-        /* PCB */
+    width:280px;
 
-        .pcb-board {
-            width: 72%;
-            height: 62%;
+    height:130px;
 
-            border:
-                2px solid #ff1111;
+    background:white;
 
-            background:
-                linear-gradient(
-                    90deg,
-                    transparent 49%,
-                    rgba(255,0,0,.3) 50%,
-                    transparent 51%
-                ),
-                linear-gradient(
-                    transparent 49%,
-                    rgba(255,0,0,.3) 50%,
-                    transparent 51%
-                );
+    border-radius:12px;
 
-            background-size:
-                40px 40px;
+    display:flex;
 
-            transform:
-                rotate(-4deg);
+    justify-content:center;
 
-            box-shadow:
-                0 0 50px rgba(255,0,0,.2);
+    align-items:center;
 
-            position: relative;
+    padding:15px;
 
-            animation:
-                pcbMove 8s linear infinite;
-        }
+    transition:.3s;
+}
 
+.organization-card:hover{
 
-        @keyframes pcbMove {
+    transform:
+        translateY(-7px);
 
-            from {
-                background-position: 0 0;
-            }
+    box-shadow:
+        0 15px 35px
+        rgba(255,0,0,.15);
+}
 
-            to {
-                background-position: 40px 40px;
-            }
+.organization-card img{
 
-        }
+    max-width:100%;
 
+    max-height:100px;
 
-        .pcb-board::after {
-            content: "PCB";
+    object-fit:contain;
 
-            position: absolute;
+    /*
+       DO NOT FILTER THESE
+    */
 
-            left: 50%;
-            top: 50%;
+    filter:none;
+}
 
-            transform:
-                translate(-50%,-50%);
+/* =========================
+   CTA
+========================= */
 
-            font-size: 55px;
+.cta{
 
-            font-weight: 900;
+    text-align:center;
 
-            letter-spacing: 6px;
+    padding:
+        100px 20px;
 
-            color:
-                rgba(255,0,0,.65);
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,0,0,.12),
+            transparent 65%
+        );
+}
 
-            text-shadow:
-                0 0 20px rgba(255,0,0,.5);
-        }
+.cta h2{
 
+    font-size:
+        clamp(40px,6vw,70px);
+}
 
-        /* LTSPICE */
+.cta h2 span{
 
-        .simulation-screen {
-            width: 78%;
-            height: 65%;
+    color:var(--red);
 
-            border:
-                2px solid #ff1111;
+    text-shadow:
+        0 0 20px
+        rgba(255,0,0,.4);
+}
 
-            background: #070707;
+.cta p{
 
-            box-shadow:
-                0 0 50px rgba(255,0,0,.2);
+    color:#888;
 
-            position: relative;
+    margin:
+        15px 0
+        28px;
+}
 
-            overflow: hidden;
-        }
+/* =========================
+   FOOTER
+========================= */
 
+footer{
 
-        .simulation-screen::before {
-            content: "";
+    padding:
+        45px 5%;
 
-            position: absolute;
+    background:#030303;
 
-            inset: 0;
+    border-top:
+        1px solid
+        var(--border);
 
-            background:
-                linear-gradient(
-                    rgba(255,0,0,.08) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(255,0,0,.08) 1px,
-                    transparent 1px
-                );
+    text-align:center;
+}
 
-            background-size: 25px 25px;
-        }
+.footer-logos{
 
+    display:flex;
 
-        .wave {
-            position: absolute;
+    justify-content:center;
 
-            width: 100%;
-            height: 100%;
+    align-items:center;
 
-            left: 0;
-            top: 0;
-        }
+    flex-wrap:wrap;
 
+    gap:20px;
 
-        .wave svg {
-            width: 100%;
-            height: 100%;
-        }
+    margin-bottom:25px;
+}
 
+.footer-logos img{
 
-        .simulation-label {
-            position: absolute;
+    height:48px;
 
-            top: 15px;
-            left: 18px;
+    width:auto;
 
-            color: #ff2020;
+    max-width:180px;
 
-            font-size: 13px;
+    object-fit:contain;
 
-            letter-spacing: 2px;
+    background:white;
 
-            font-weight: 800;
-        }
+    border-radius:5px;
 
+    padding:4px;
 
-        .workshop-content h2 {
-            font-size: 42px;
+    filter:none;
+}
 
-            margin-bottom: 20px;
-        }
+.footer-logos .protox-footer{
 
+    height:60px;
 
-        .workshop-content h2 span {
-            color: #ff1616;
-        }
+    filter:
+        drop-shadow(
+            0 0 10px
+            rgba(255,0,0,.35)
+        );
+}
 
+footer p{
 
-        .workshop-content p {
-            color: #999;
+    color:#666;
 
-            line-height: 1.8;
+    font-size:12px;
 
-            margin-bottom: 25px;
-        }
+    line-height:1.7;
+}
 
+/* =========================
+   SCROLL ANIMATION
+========================= */
 
-        .topics {
-            list-style: none;
-        }
+.reveal{
 
+    opacity:0;
 
-        .topics li {
-            margin: 15px 0;
+    transform:
+        translateY(30px);
 
-            color: #ddd;
+    transition:
+        opacity .7s ease,
+        transform .7s ease;
+}
 
-            display: flex;
+.reveal.active{
 
-            align-items: center;
+    opacity:1;
 
-            transition: .3s;
-        }
+    transform:none;
+}
 
+/* =========================
+   RESPONSIVE
+========================= */
 
-        .topics li:hover {
-            transform:
-                translateX(8px);
+@media(max-width:1100px){
 
-            color: white;
-        }
+    .nav-links{
+        display:none;
+    }
 
+    .menu-button{
+        display:block;
+    }
 
-        .topics li::before {
-            content: "▸";
+    .hero-grid{
+        grid-template-columns:1fr;
+    }
 
-            color: #ff0000;
+    .hero-logo{
+        order:-1;
+    }
 
-            margin-right: 12px;
+    .organization-logos{
+        display:none;
+    }
+}
 
-            font-size: 18px;
-        }
+@media(max-width:800px){
 
+    section{
+        padding:80px 0;
+    }
 
-        .workshop-badge {
-            display: inline-block;
+    .workshop-grid,
+    .speaker-grid,
+    .pricing-grid{
+        grid-template-columns:1fr;
+    }
 
-            padding: 7px 14px;
+    .speaker-card{
 
-            border:
-                1px solid #ff2020;
+        grid-template-columns:
+            110px 1fr;
 
-            border-radius: 20px;
+        gap:18px;
+    }
 
-            color: #ff2020;
+    .speaker-card img{
 
-            font-size: 11px;
+        width:110px;
 
-            letter-spacing: 2px;
+        height:145px;
+    }
 
-            font-weight: 800;
+    .schedule-row{
 
-            margin-bottom: 18px;
-        }
+        grid-template-columns:1fr;
 
+        gap:8px;
+    }
 
-        /* =========================
-           SPEAKER
-        ========================= */
+    .hero h1{
+        letter-spacing:-3px;
+    }
+}
 
-        .speaker-card {
-            max-width: 800px;
+@media(max-width:550px){
 
-            margin: auto;
+    .navbar{
+        height:70px;
+    }
 
-            background:
-                linear-gradient(
-                    145deg,
-                    #121212,
-                    #070707
-                );
+    .nav-logo img{
+        width:120px;
+        height:48px;
+    }
 
-            border:
-                1px solid #282828;
+    .hero{
+        padding-top:110px;
+    }
 
-            border-radius: 16px;
+    .speaker-card{
+        grid-template-columns:1fr;
+    }
 
-            padding: 50px;
+    .speaker-card img{
+        width:100%;
+        height:230px;
+    }
 
-            display: flex;
+    .hero-buttons{
+        flex-direction:column;
+    }
 
-            align-items: center;
+    .btn{
+        width:100%;
+    }
 
-            gap: 40px;
+    .organization-card{
+        width:100%;
+    }
+}
 
-            transition: .4s;
-        }
-
-
-        .speaker-card:hover {
-            transform:
-                translateY(-6px);
-
-            border-color:
-                #ff2020;
-
-            box-shadow:
-                0 20px 50px
-                rgba(255,0,0,.18);
-        }
-
-
-        .speaker-photo {
-            width: 150px;
-            height: 150px;
-
-            flex-shrink: 0;
-
-            border-radius: 50%;
-
-            border:
-                3px solid #e60000;
-
-            background: #111;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            font-size: 55px;
-
-            box-shadow:
-                0 0 25px rgba(255,0,0,.3);
-        }
-
-
-        .speaker-info h2 {
-            font-size: 32px;
-        }
-
-
-        .speaker-info .role {
-            color: #ff2020;
-
-            margin: 8px 0 15px;
-
-            font-weight: 700;
-        }
-
-
-        .speaker-info p {
-            color: #999;
-
-            line-height: 1.7;
-        }
-
-
-        /* ==================================================
-           REGISTRATION
-        ================================================== */
-
-        .pricing {
-            background:
-                rgba(8,8,8,.65);
-        }
-
-
-        /*
-            MAIN REGISTRATION CONTAINER
-        */
-
-        .registration-container {
-            max-width: 1100px;
-
-            margin: auto;
-        }
-
-
-        /*
-            MEMBER SECTION
-        */
-
-        .member-section {
-            margin-bottom: 70px;
-        }
-
-
-        .member-heading {
-            display: flex;
-
-            align-items: center;
-
-            gap: 15px;
-
-            margin-bottom: 25px;
-
-            padding-bottom: 15px;
-
-            border-bottom:
-                1px solid
-                rgba(255,0,0,.25);
-        }
-
-
-        .member-heading .number {
-            color: #ff2020;
-
-            font-size: 13px;
-
-            font-weight: 900;
-
-            letter-spacing: 3px;
-        }
-
-
-        .member-heading h3 {
-            font-size: 28px;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-        }
-
-
-        .member-heading h3 span {
-            color: #ff2020;
-        }
-
-
-        /*
-            PRICING CARDS
-        */
-
-        .price-grid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3,1fr);
-
-            gap: 25px;
-        }
-
-
-        .price-card {
-            border:
-                1px solid #2a2a2a;
-
-            background: #0d0d0d;
-
-            padding: 38px 28px;
-
-            border-radius: 14px;
-
-            text-align: center;
-
-            transition: .4s;
-
-            position: relative;
-
-            overflow: hidden;
-        }
-
-
-        .price-card::before {
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-            left: 0;
-
-            width: 100%;
-            height: 3px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    transparent,
-                    #ff0000,
-                    transparent
-                );
-
-            transform:
-                translateX(-100%);
-
-            transition: .5s;
-        }
-
-
-        .price-card:hover::before {
-            transform:
-                translateX(100%);
-        }
-
-
-        .price-card:hover {
-            transform:
-                translateY(-10px);
-
-            border-color:
-                #ff2020;
-
-            box-shadow:
-                0 20px 40px
-                rgba(255,0,0,.2);
-        }
-
-
-        .price-card.featured {
-            border:
-                2px solid #e60000;
-
-            box-shadow:
-                0 0 35px
-                rgba(255,0,0,.15);
-        }
-
-
-        .price-card .workshop-number {
-            color: #777;
-
-            font-size: 11px;
-
-            letter-spacing: 2px;
-
-            font-weight: 800;
-        }
-
-
-        .price-card h4 {
-            font-size: 25px;
-
-            margin-top: 12px;
-        }
-
-
-        .price-card .price {
-            font-size: 55px;
-
-            font-weight: 900;
-
-            margin: 18px 0;
-
-            color: #fff;
-        }
-
-
-        .price-card .price span {
-            color: #ff1818;
-        }
-
-
-        .price-card p {
-            color: #888;
-
-            min-height: 50px;
-
-            line-height: 1.6;
-
-            font-size: 14px;
-
-            margin-bottom: 22px;
-        }
-
-
-        .price-card .btn {
-            width: 100%;
-        }
-
-
-        /*
-            MEMBER COLOR LABEL
-        */
-
-        .sps-label {
-            display: inline-block;
-
-            color: #ff2020;
-
-            border:
-                1px solid
-                rgba(255,0,0,.4);
-
-            padding: 6px 13px;
-
-            border-radius: 20px;
-
-            font-size: 10px;
-
-            font-weight: 900;
-
-            letter-spacing: 2px;
-        }
-
-
-        .non-sps-label {
-            display: inline-block;
-
-            color: #ff2020;
-
-            border:
-                1px solid
-                rgba(255,0,0,.4);
-
-            padding: 6px 13px;
-
-            border-radius: 20px;
-
-            font-size: 10px;
-
-            font-weight: 900;
-
-            letter-spacing: 2px;
-        }
-
-
-        /*
-            BOTH WORKSHOPS CARD
-        */
-
-        .both-card {
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(255,0,0,.10),
-                    #0d0d0d
-                );
-        }
-
-
-        .both-card h4 {
-            color: #fff;
-        }
-
-
-        .both-card .price {
-            text-shadow:
-                0 0 20px
-                rgba(255,0,0,.35);
-        }
-
-
-        /*
-            NOTE
-        */
-
-        .registration-note {
-            text-align: center;
-
-            margin-top: 20px;
-
-            color: #777;
-
-            font-size: 12px;
-        }
-
-
-        /*
-            SEATS
-        */
-
-        .seats {
-            max-width: 700px;
-
-            margin: 60px auto 0;
-
-            text-align: center;
-        }
-
-
-        .seat-number {
-            font-size: 75px;
-
-            font-weight: 900;
-
-            color: #ff1717;
-
-            text-shadow:
-                0 0 30px
-                rgba(255,23,23,.5);
-        }
-
-
-        .seat-text {
-            color: #999;
-
-            letter-spacing: 2px;
-
-            font-size: 14px;
-
-            font-weight: 700;
-        }
-
-
-        .progress {
-            height: 10px;
-
-            background: #222;
-
-            border-radius: 20px;
-
-            overflow: hidden;
-
-            margin-top: 20px;
-        }
-
-
-        .progress-bar {
-            height: 100%;
-
-            width: 0;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #b30000,
-                    #ff1717,
-                    #ff5555
-                );
-
-            box-shadow:
-                0 0 15px #ff1717;
-
-            transition:
-                width 1s;
-        }
-
-
-        /* =========================
-           CTA
-        ========================= */
-
-        .cta {
-            text-align: center;
-
-            padding: 120px 8%;
-
-            background:
-                radial-gradient(
-                    circle at center,
-                    rgba(255,0,0,.18),
-                    transparent 60%
-                ),
-                #050505;
-        }
-
-
-        .cta h2 {
-            font-size:
-                clamp(40px,6vw,70px);
-
-            text-transform: uppercase;
-        }
-
-
-        .cta h2 span {
-            color: #ff1717;
-        }
-
-
-        .cta p {
-            color: #888;
-
-            margin: 20px 0 35px;
-
-            font-size: 18px;
-        }
-
-
-        /* =========================
-           FOOTER
-        ========================= */
-
-        footer {
-            border-top:
-                1px solid #222;
-
-            padding: 40px 8%;
-
-            text-align: center;
-
-            color: #666;
-
-            font-size: 14px;
-
-            background: #030303;
-        }
-
-
-        .footer-logos {
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            gap: 25px;
-
-            margin-bottom: 20px;
-        }
-
-
-        .footer-logo {
-            height: 32px;
-
-            max-width: 120px;
-
-            object-fit: contain;
-
-            filter:
-                brightness(0) invert(1);
-
-            opacity: .6;
-        }
-
-
-        footer strong {
-            color: #ff1c1c;
-        }
-
-
-        /* =========================
-           REVEAL
-        ========================= */
-
-        .reveal {
-            opacity: 0;
-
-            transform:
-                translateY(50px);
-
-            transition:
-                opacity .8s ease,
-                transform .8s ease;
-        }
-
-
-        .reveal.active {
-            opacity: 1;
-
-            transform:
-                translateY(0);
-        }
-
-
-        .reveal-delay-1 {
-            transition-delay: .1s;
-        }
-
-
-        .reveal-delay-2 {
-            transition-delay: .2s;
-        }
-
-
-        .reveal-delay-3 {
-            transition-delay: .3s;
-        }
-
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media(max-width:990px) {
-
-            .nav-partner-logos {
-                display: none;
-            }
-
-            .circuit {
-                opacity: .2;
-
-                right: -100px;
-            }
-
-        }
-
-
-        @media(max-width:850px) {
-
-            nav {
-                padding: 0 5%;
-            }
-
-
-            nav ul {
-                display: none;
-            }
-
-
-            .hero {
-                padding:
-                    120px 7% 70px;
-            }
-
-
-            .circuit {
-                opacity: .12;
-
-                right: -140px;
-
-                transform: scale(.8);
-            }
-
-
-            .info-grid,
-            .price-grid,
-            .workshop-grid {
-                grid-template-columns: 1fr;
-            }
-
-
-            .speaker-card {
-                flex-direction: column;
-
-                text-align: center;
-
-                padding: 35px 25px;
-            }
-
-
-            .workshop-image {
-                height: 320px;
-            }
-
-
-            section {
-                padding: 75px 7%;
-            }
-
-
-            .section-title h2 {
-                font-size: 35px;
-            }
-
-
-            .workshop-content h2 {
-                font-size: 35px;
-            }
-
-
-            .member-heading {
-                justify-content: center;
-
-                text-align: center;
-
-                flex-wrap: wrap;
-            }
-
-        }
-
-
-        @media(max-width:500px) {
-
-            .logo {
-                font-size: 20px;
-            }
-
-
-            .protox-logo-svg {
-                width: 35px;
-                height: 35px;
-            }
-
-
-            .nav-btn {
-                padding: 8px 12px;
-
-                font-size: 12px;
-            }
-
-
-            .hero h1 {
-                font-size: 65px;
-            }
-
-
-            .hero-buttons {
-                flex-direction: column;
-
-                align-items: flex-start;
-            }
-
-
-            .btn {
-                width: 100%;
-
-                justify-content: center;
-            }
-
-
-            .speaker-photo {
-                width: 120px;
-                height: 120px;
-            }
-
-
-            .price {
-                font-size: 48px;
-            }
-
-
-            .member-heading h3 {
-                font-size: 23px;
-            }
-
-        }
-
-    </style>
-
+</style>
 </head>
-
 
 <body>
 
-
-<!-- =========================
-     BACKGROUND
-========================= -->
-
-<canvas id="bgCanvas"></canvas>
-
-<div class="glow-orb glow-orb-1"></div>
-<div class="glow-orb glow-orb-2"></div>
+<canvas id="circuitCanvas"></canvas>
 
 
-<!-- =========================
+<!-- =========================================
      NAVBAR
-========================= -->
+========================================= -->
 
-<nav>
+<nav class="navbar" id="navbar">
 
-    <div class="brand-container">
+    <div class="nav-logo">
 
-        <svg
-            class="protox-logo-svg"
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-
-            <rect
-                x="5"
-                y="5"
-                width="90"
-                height="90"
-                rx="15"
-                fill="#0A0A0A"
-                stroke="#FF1A1A"
-                stroke-width="4"
-            />
-
-            <path
-                d="M25 50 H35 L45 25 L55 75 L65 50 H75"
-                stroke="#FF1A1A"
-                stroke-width="5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            />
-
-            <circle
-                cx="25"
-                cy="50"
-                r="4"
-                fill="#FFFFFF"
-            />
-
-            <circle
-                cx="75"
-                cy="50"
-                r="4"
-                fill="#FFFFFF"
-            />
-
-        </svg>
-
-
-        <div class="logo">
-            PRO<span>TO</span>X
-        </div>
-
-
-        <div class="nav-partner-logos">
-
-            <img
-                src="https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg"
-                alt="IEEE"
-                class="partner-logo"
-            >
-
-            <img
-                src="https://signalprocessingsociety.org/sites/default/files/SPS_logo_white.png"
-                alt="IEEE SPS"
-                class="partner-logo"
-            >
-
-            <img
-                src="https://via.placeholder.com/100x40/000000/FFFFFF?text=JCMC+SIIT"
-                alt="JCMC SIIT"
-                class="partner-logo"
-            >
-
-        </div>
+        <img
+            src="logos/protox.png"
+            alt="PROTOX³"
+        >
 
     </div>
 
 
-    <ul>
+    <div class="organization-logos">
+
+        <!-- ORIGINAL IEEE LOGO -->
+        <img
+            class="ieee"
+            src="logos/ieee.png"
+            alt="IEEE"
+        >
+
+        <!-- ORIGINAL IEEE SPS LOGO -->
+        <img
+            class="sps"
+            src="logos/ieee-sps.png"
+            alt="IEEE Signal Processing Society"
+        >
+
+        <!-- ORIGINAL JCMCSIIT LOGO -->
+        <img
+            class="jcmc"
+            src="logos/jcmc-siit.png"
+            alt="IEEE Students Branch JCMCSIIT"
+        >
+
+    </div>
+
+
+    <ul class="nav-links">
 
         <li>
-            <a href="#home">
-                Home
+            <a href="#about">
+                About
             </a>
         </li>
 
         <li>
-            <a href="#pcb">
-                PCB Workshop
+            <a href="#sessions">
+                Sessions
             </a>
         </li>
 
         <li>
-            <a href="#ltspice">
-                LTspice Workshop
-            </a>
-        </li>
-
-        <li>
-            <a href="#speaker">
-                Speaker
+            <a href="#speakers">
+                Speakers
             </a>
         </li>
 
@@ -2200,494 +1398,137 @@
             </a>
         </li>
 
+        <li>
+            <a
+                href="#registration"
+                class="nav-register"
+            >
+                Register
+            </a>
+        </li>
+
     </ul>
 
-
-    <a
-        href="#registration"
-        class="nav-btn">
-
-        Register
-
-    </a>
+    <div
+        class="menu-button"
+        onclick="toggleMenu()"
+    >
+        ☰
+    </div>
 
 </nav>
 
 
-<!-- =========================
+<!-- =========================================
      HERO
-========================= -->
+========================================= -->
 
-<section
-    class="hero"
-    id="home">
+<section class="hero" id="home">
 
+    <div class="container">
 
-    <div class="hero-content">
+        <div class="hero-grid">
 
-        <div class="tag">
-            ⚡ 1 DAY TECHNICAL WORKSHOP
-        </div>
 
+            <div class="hero-content reveal">
 
-        <h1>
-            PROTO<span>X</span>
-        </h1>
-
-
-        <h2>
-            Inside the Circuit Board
-        </h2>
-
-
-        <p class="hero-description">
-
-            Explore the world of electronics through two
-            focused technical sessions — PCB Design and
-            LTspice Circuit Simulation.
-
-            Learn, simulate and understand how modern
-            electronic circuits are designed.
-
-        </p>
-
-
-        <div class="hero-buttons">
-
-            <a
-                href="#pcb"
-                class="btn btn-red">
-
-                Explore Workshops →
-
-            </a>
-
-
-            <a
-                href="#registration"
-                class="btn btn-outline">
-
-                Register Now
-
-            </a>
-
-        </div>
-
-
-        <div class="hero-partners">
-
-            <p>
-                Organized By
-            </p>
-
-
-            <div class="hero-partner-grid">
-
-                <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg"
-                    alt="IEEE"
-                    class="hero-partner-logo"
-                >
-
-                <img
-                    src="https://signalprocessingsociety.org/sites/default/files/SPS_logo_white.png"
-                    alt="IEEE SPS"
-                    class="hero-partner-logo"
-                >
-
-                <img
-                    src="https://via.placeholder.com/120x40/000000/FFFFFF?text=JCMC+SIIT"
-                    alt="JCMC SIIT"
-                    class="hero-partner-logo"
-                >
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- Animated Circuit -->
-
-    <div class="circuit">
-
-        <div class="chip">
-            PCB
-        </div>
-
-
-        <div class="trace t1">
-            <div class="signal s1"></div>
-        </div>
-
-
-        <div class="trace t2">
-            <div class="signal s2"></div>
-        </div>
-
-
-        <div class="trace t3">
-            <div class="signal s3"></div>
-        </div>
-
-
-        <div class="trace t4">
-            <div class="signal s4"></div>
-        </div>
-
-
-        <div class="node n1"></div>
-        <div class="node n2"></div>
-        <div class="node n3"></div>
-        <div class="node n4"></div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     OVERVIEW
-========================= -->
-
-<section class="reveal">
-
-    <div class="section-title">
-
-        <small>
-            Workshop Overview
-        </small>
-
-        <h2>
-            Two Tracks. One Circuit.
-        </h2>
-
-        <p>
-            Choose your learning path and explore
-            electronics from design to simulation.
-        </p>
-
-    </div>
-
-
-    <div class="info-grid">
-
-
-        <div class="info-card reveal reveal-delay-1">
-
-            <div class="icon">
-                ⚡
-            </div>
-
-            <h3>
-                PCB Design
-            </h3>
-
-            <p>
-                Learn how electronic circuits are transformed
-                into professional printed circuit boards.
-            </p>
-
-        </div>
-
-
-        <div class="info-card reveal reveal-delay-2">
-
-            <div class="icon">
-                〽️
-            </div>
-
-            <h3>
-                LTspice Simulation
-            </h3>
-
-            <p>
-                Build and simulate electronic circuits
-                before physically constructing them.
-            </p>
-
-        </div>
-
-
-        <div class="info-card reveal reveal-delay-3">
-
-            <div class="icon">
-                🛠️
-            </div>
-
-            <h3>
-                Hands-On Learning
-            </h3>
-
-            <p>
-                Experience practical demonstrations and
-                technical guidance throughout the workshop.
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     WORKSHOP 01 — PCB
-===================================================== -->
-
-<section
-    class="workshop reveal"
-    id="pcb">
-
-
-    <div class="workshop-heading">
-
-        <div class="number">
-            WORKSHOP 01
-        </div>
-
-        <h2>
-            PCB Design
-        </h2>
-
-        <p>
-            From schematic to circuit board
-        </p>
-
-    </div>
-
-
-    <div class="workshop-grid">
-
-
-        <div class="workshop-image reveal reveal-delay-1">
-
-            <div class="pcb-board"></div>
-
-        </div>
-
-
-        <div class="workshop-content reveal reveal-delay-2">
-
-            <div class="workshop-badge">
-                PCB DESIGN
-            </div>
-
-
-            <h2>
-                Design the
-                <span>Board</span>
-            </h2>
-
-
-            <p>
-
-                Understand the complete PCB design workflow,
-                from creating a schematic to designing the
-                physical board layout.
-
-                Learn how electronic components, tracks and
-                connections come together to create a
-                functional circuit board.
-
-            </p>
-
-
-            <ul class="topics">
-
-                <li>
-                    Introduction to PCB Design
-                </li>
-
-                <li>
-                    Understanding Schematics
-                </li>
-
-                <li>
-                    Component Placement
-                </li>
-
-                <li>
-                    PCB Layout Design
-                </li>
-
-                <li>
-                    Routing & Track Design
-                </li>
-
-                <li>
-                    Design Rules & Best Practices
-                </li>
-
-                <li>
-                    Practical PCB Demonstration
-                </li>
-
-            </ul>
-
-
-            <a
-                href="#registration"
-                class="btn btn-red"
-                style="margin-top:25px;">
-
-                Join PCB Workshop →
-
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     WORKSHOP 02 — LTSPICE
-===================================================== -->
-
-<section
-    class="workshop reveal"
-    id="ltspice">
-
-
-    <div class="workshop-heading">
-
-        <div class="number">
-            WORKSHOP 02
-        </div>
-
-        <h2>
-            LTspice Circuit Simulation
-        </h2>
-
-        <p>
-            Simulate. Analyze. Understand.
-        </p>
-
-    </div>
-
-
-    <div class="workshop-grid">
-
-
-        <div class="workshop-image reveal reveal-delay-1">
-
-            <div class="simulation-screen">
-
-                <div class="simulation-label">
-                    LTSPICE / CIRCUIT ANALYSIS
+                <div class="hero-badge">
+                    ONE-DAY TECHNICAL WORKSHOP
                 </div>
 
 
-                <div class="wave">
+                <h1>
+                    PROTO<span>X³</span>
+                </h1>
 
-                    <svg
-                        viewBox="0 0 500 300"
-                        preserveAspectRatio="none">
 
-                        <polyline
-                            points="
-                            0,170
-                            30,170
-                            45,100
-                            60,230
-                            75,100
-                            90,230
-                            105,170
-                            140,170
-                            170,90
-                            200,250
-                            230,90
-                            260,250
-                            290,170
-                            330,170
-                            360,110
-                            390,230
-                            420,110
-                            450,230
-                            500,170"
-                            fill="none"
-                            stroke="#ff2020"
-                            stroke-width="4"
-                        />
+                <h2>
+                    Inside the Circuit Board
+                </h2>
 
-                    </svg>
+
+                <p class="hero-description">
+
+                    Go beyond theory.
+
+                    Learn practical PCB design
+                    and circuit simulation through
+                    focused technical sessions
+                    designed for students and
+                    electronics enthusiasts.
+
+                </p>
+
+
+                <div class="hero-buttons">
+
+                    <a
+                        href="#registration"
+                        class="btn btn-red"
+                    >
+                        REGISTER NOW →
+                    </a>
+
+
+                    <a
+                        href="#sessions"
+                        class="btn btn-outline"
+                    >
+                        EXPLORE WORKSHOP
+                    </a>
+
+                </div>
+
+
+                <div class="hero-info">
+
+                    <div>
+                        <strong>
+                            PCB Design
+                        </strong>
+
+                        <small>
+                            TRACK 01
+                        </small>
+                    </div>
+
+
+                    <div>
+                        <strong>
+                            LTspice
+                        </strong>
+
+                        <small>
+                            TRACK 02
+                        </small>
+                    </div>
+
+
+                    <div>
+                        <strong>
+                            35 Seats
+                        </strong>
+
+                        <small>
+                            LIMITED
+                        </small>
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <!-- PROTOX LOGO -->
 
-        <div class="workshop-content reveal reveal-delay-2">
+            <div class="hero-logo reveal">
 
-            <div class="workshop-badge">
-                LTSPICE
+                <img
+                    src="logos/protox.png"
+                    alt="PROTOX³"
+                >
+
             </div>
-
-
-            <h2>
-                Simulate the
-                <span>Circuit</span>
-            </h2>
-
-
-            <p>
-
-                Explore electronic circuit simulation using
-                LTspice.
-
-                Build virtual circuits, run simulations,
-                observe waveforms and understand circuit
-                behaviour before moving to physical hardware.
-
-            </p>
-
-
-            <ul class="topics">
-
-                <li>
-                    Introduction to LTspice
-                </li>
-
-                <li>
-                    Creating Electronic Circuits
-                </li>
-
-                <li>
-                    Component Selection
-                </li>
-
-                <li>
-                    Transient Analysis
-                </li>
-
-                <li>
-                    Waveform Generation
-                </li>
-
-                <li>
-                    Circuit Analysis
-                </li>
-
-                <li>
-                    Practical LTspice Demonstration
-                </li>
-
-            </ul>
-
-
-            <a
-                href="#registration"
-                class="btn btn-red"
-                style="margin-top:25px;">
-
-                Join LTspice Workshop →
-
-            </a>
 
         </div>
 
@@ -2696,57 +1537,124 @@
 </section>
 
 
-<!-- =========================
-     SPEAKER
-========================= -->
+<!-- =========================================
+     ABOUT
+========================================= -->
 
-<section
-    class="reveal"
-    id="speaker">
+<section id="about">
 
+    <div class="container">
 
-    <div class="section-title">
+        <div class="section-heading reveal">
 
-        <small>
-            Meet The Speaker
-        </small>
-
-        <h2>
-            Learn From Experience
-        </h2>
-
-    </div>
-
-
-    <div class="speaker-card reveal">
-
-        <div class="speaker-photo">
-            👨‍💻
-        </div>
-
-
-        <div class="speaker-info">
+            <small>
+                ABOUT PROTOX
+            </small>
 
             <h2>
-                Dakshin
+                Build. Simulate. Understand.
             </h2>
-
-
-            <div class="role">
-                Speaker
-            </div>
-
 
             <p>
 
-                Pursuing PG at Digital University Kerala.
-
-                Dakshin will guide participants through
-                PCB design concepts and LTspice circuit
-                simulation using a practical and
-                hands-on approach.
+                A practical one-day workshop
+                covering two essential tools
+                in modern electronics:
+                PCB Design and LTspice
+                circuit simulation.
 
             </p>
+
+        </div>
+
+
+        <div class="workshop-grid">
+
+
+            <article class="workshop-card reveal">
+
+                <div class="track">
+                    TRACK 01
+                </div>
+
+                <h3>
+                    PCB Design
+                </h3>
+
+                <p>
+
+                    Understand the journey
+                    from schematic to a
+                    professional printed
+                    circuit board layout.
+
+                </p>
+
+
+                <ul class="features">
+
+                    <li>
+                        Schematic and component planning
+                    </li>
+
+                    <li>
+                        PCB layout fundamentals
+                    </li>
+
+                    <li>
+                        Routing and design considerations
+                    </li>
+
+                    <li>
+                        Practical design workflow
+                    </li>
+
+                </ul>
+
+            </article>
+
+
+            <article class="workshop-card reveal">
+
+                <div class="track">
+                    TRACK 02
+                </div>
+
+                <h3>
+                    LTspice Simulation
+                </h3>
+
+                <p>
+
+                    Explore circuit simulation
+                    and learn how to test circuit
+                    behavior before hardware
+                    implementation.
+
+                </p>
+
+
+                <ul class="features">
+
+                    <li>
+                        Introduction to circuit simulation
+                    </li>
+
+                    <li>
+                        SPICE fundamentals
+                    </li>
+
+                    <li>
+                        Waveform and circuit analysis
+                    </li>
+
+                    <li>
+                        Practical simulation workflow
+                    </li>
+
+                </ul>
+
+            </article>
 
         </div>
 
@@ -2755,373 +1663,452 @@
 </section>
 
 
-<!-- =====================================================
+<!-- =========================================
+     SESSIONS
+========================================= -->
+
+<section id="sessions">
+
+    <div class="container">
+
+        <div class="section-heading reveal">
+
+            <small>
+                WORKSHOP SESSIONS
+            </small>
+
+            <h2>
+                Inside the Program
+            </h2>
+
+        </div>
+
+
+        <div class="schedule reveal">
+
+
+            <div class="schedule-row">
+
+                <time>
+                    SESSION 01
+                </time>
+
+                <div>
+
+                    <strong>
+                        PCB Design Workshop
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        Hands-on PCB design
+                        concepts and workflow
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="schedule-row">
+
+                <time>
+                    SESSION 02
+                </time>
+
+                <div>
+
+                    <strong>
+                        Spice It Up:
+                        Introduction to
+                        Circuit Simulation
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        Practical introduction
+                        to LTspice and circuit
+                        simulation
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="schedule-row">
+
+                <time>
+                    HANDS-ON
+                </time>
+
+                <div>
+
+                    <strong>
+                        Build & Simulate
+                    </strong>
+
+                    <br>
+
+                    <span>
+                        Apply concepts through
+                        practical technical
+                        activities
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     SPEAKERS
+========================================= -->
+
+<section id="speakers">
+
+    <div class="container">
+
+        <div class="section-heading reveal">
+
+            <small>
+                MEET THE SPEAKERS
+            </small>
+
+            <h2>
+                Learn From Experience
+            </h2>
+
+        </div>
+
+
+        <div class="speaker-grid">
+
+
+            <!-- DAKSHIN -->
+
+            <article class="speaker-card reveal">
+
+                <img
+                    src="images/dakshin.jpg"
+                    alt="Dakshin J"
+                >
+
+
+                <div>
+
+                    <h3>
+                        DAKSHIN J
+                    </h3>
+
+
+                    <div class="speaker-role">
+
+                        Chair, IEEE SB DUK
+                        <br>
+
+                        Training Manager,
+                        Institution Innovation
+                        Council DUK
+                        <br>
+
+                        PCB Design Workshop
+
+                    </div>
+
+
+                    <p class="speaker-description">
+
+                        Leading the PCB design
+                        session with a practical
+                        approach to designing
+                        and understanding
+                        printed circuit boards.
+
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- AMAL -->
+
+            <article class="speaker-card reveal">
+
+                <img
+                    src="images/amal-madhu.jpg"
+                    alt="Amal Madhu"
+                >
+
+
+                <div>
+
+                    <h3>
+                        AMAL MADHU
+                    </h3>
+
+
+                    <div class="speaker-role">
+
+                        LINK Representative,
+                        IEEE SB DUK
+                        <br>
+
+                        Spice It Up:
+                        Introduction to
+                        Circuit Simulation
+
+                    </div>
+
+
+                    <p class="speaker-description">
+
+                        Introducing participants
+                        to circuit simulation
+                        concepts and practical
+                        LTspice workflows.
+
+                    </p>
+
+                </div>
+
+            </article>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
      REGISTRATION
-===================================================== -->
+========================================= -->
 
-<section
-    class="pricing reveal"
-    id="registration">
+<section id="registration">
 
+    <div class="container">
 
-    <div class="section-title">
+        <div class="section-heading reveal">
 
-        <small>
-            Registration
-        </small>
+            <small>
+                REGISTRATION
+            </small>
 
-        <h2>
-            Choose Your Workshop
-        </h2>
+            <h2>
+                Choose Your Pass
+            </h2>
 
-        <p>
-            Select your membership category and workshop.
-        </p>
+            <p>
+                Limited to 35 participants.
+            </p>
 
-    </div>
-
-
-    <div class="registration-container">
+        </div>
 
 
-        <!-- =========================================
-             SPS MEMBERS
-        ========================================== -->
-
-        <div class="member-section">
+        <div class="pricing-grid">
 
 
-            <div class="member-heading">
+            <!-- SPS PCB -->
 
-                <div class="number">
-                    01
+            <div class="price-card featured reveal">
+
+                <div class="member-type">
+                    SPS MEMBER
                 </div>
 
                 <h3>
-                    <span>SPS</span> Members
+                    PCB Design
                 </h3>
 
+                <div class="price">
+                    ₹
+                    <strong>110</strong>
+                </div>
+
+                <p>
+                    Access to the
+                    PCB Design workshop.
+                </p>
+
             </div>
 
 
-            <div class="price-grid">
+            <!-- SPS LTSPICE -->
 
+            <div class="price-card reveal">
 
-                <!-- SPS PCB -->
-
-                <div class="price-card reveal">
-
-                    <div class="sps-label">
-                        SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        WORKSHOP 01
-                    </div>
-
-                    <h4>
-                        PCB Design
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>110</span>
-                    </div>
-
-                    <p>
-                        Registration for the
-                        PCB Design Workshop.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="PCB Design"
-                        data-category="SPS Member">
-
-                        Register →
-
-                    </a>
-
-                </div>
-
-
-                <!-- SPS LTSPICE -->
-
-                <div class="price-card reveal">
-
-                    <div class="sps-label">
-                        SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        WORKSHOP 02
-                    </div>
-
-                    <h4>
-                        LTspice
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>110</span>
-                    </div>
-
-                    <p>
-                        Registration for the
-                        LTspice Workshop.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="LTspice"
-                        data-category="SPS Member">
-
-                        Register →
-
-                    </a>
-
-                </div>
-
-
-                <!-- SPS BOTH -->
-
-                <div class="price-card featured both-card reveal">
-
-                    <div class="sps-label">
-                        SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        COMPLETE PROTOX
-                    </div>
-
-                    <h4>
-                        Both Workshops
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>220</span>
-                    </div>
-
-                    <p>
-                        Attend both PCB Design
-                        and LTspice Workshops.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="Both Workshops"
-                        data-category="SPS Member">
-
-                        Register →
-
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =========================================
-             NON SPS MEMBERS
-        ========================================== -->
-
-        <div class="member-section">
-
-
-            <div class="member-heading">
-
-                <div class="number">
-                    02
+                <div class="member-type">
+                    SPS MEMBER
                 </div>
 
                 <h3>
-                    <span>NON-SPS</span> Members
+                    LTspice
                 </h3>
 
+                <div class="price">
+                    ₹
+                    <strong>110</strong>
+                </div>
+
+                <p>
+                    Access to the LTspice
+                    circuit simulation session.
+                </p>
+
             </div>
 
 
-            <div class="price-grid">
+            <!-- SPS BOTH -->
 
+            <div class="price-card featured reveal">
 
-                <!-- NON SPS PCB -->
-
-                <div class="price-card reveal">
-
-                    <div class="non-sps-label">
-                        NON-SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        WORKSHOP 01
-                    </div>
-
-                    <h4>
-                        PCB Design
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>125</span>
-                    </div>
-
-                    <p>
-                        Registration for the
-                        PCB Design Workshop.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="PCB Design"
-                        data-category="Non-SPS Member">
-
-                        Register →
-
-                    </a>
-
+                <div class="member-type">
+                    SPS MEMBER
                 </div>
 
+                <h3>
+                    Both Sessions
+                </h3>
 
-                <!-- NON SPS LTSPICE -->
-
-                <div class="price-card reveal">
-
-                    <div class="non-sps-label">
-                        NON-SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        WORKSHOP 02
-                    </div>
-
-                    <h4>
-                        LTspice
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>125</span>
-                    </div>
-
-                    <p>
-                        Registration for the
-                        LTspice Workshop.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="LTspice"
-                        data-category="Non-SPS Member">
-
-                        Register →
-
-                    </a>
-
+                <div class="price">
+                    ₹
+                    <strong>220</strong>
                 </div>
 
-
-                <!-- NON SPS BOTH -->
-
-                <div class="price-card featured both-card reveal">
-
-                    <div class="non-sps-label">
-                        NON-SPS MEMBER
-                    </div>
-
-                    <div class="workshop-number">
-                        COMPLETE PROTOX
-                    </div>
-
-                    <h4>
-                        Both Workshops
-                    </h4>
-
-                    <div class="price">
-                        ₹<span>250</span>
-                    </div>
-
-                    <p>
-                        Attend both PCB Design
-                        and LTspice Workshops.
-                    </p>
-
-                    <a
-                        href="#"
-                        class="btn btn-red register-btn"
-                        data-workshop="Both Workshops"
-                        data-category="Non-SPS Member">
-
-                        Register →
-
-                    </a>
-
-                </div>
+                <p>
+                    PCB Design +
+                    LTspice.
+                </p>
 
             </div>
+
+
+            <!-- NON SPS PCB -->
+
+            <div class="price-card reveal">
+
+                <div class="member-type">
+                    NON-SPS MEMBER
+                </div>
+
+                <h3>
+                    PCB Design
+                </h3>
+
+                <div class="price">
+                    ₹
+                    <strong>125</strong>
+                </div>
+
+                <p>
+                    Access to the
+                    PCB Design workshop.
+                </p>
+
+            </div>
+
+
+            <!-- NON SPS LTSPICE -->
+
+            <div class="price-card reveal">
+
+                <div class="member-type">
+                    NON-SPS MEMBER
+                </div>
+
+                <h3>
+                    LTspice
+                </h3>
+
+                <div class="price">
+                    ₹
+                    <strong>125</strong>
+                </div>
+
+                <p>
+                    Access to the LTspice
+                    circuit simulation session.
+                </p>
+
+            </div>
+
+
+            <!-- NON SPS BOTH -->
+
+            <div class="price-card featured reveal">
+
+                <div class="member-type">
+                    NON-SPS MEMBER
+                </div>
+
+                <h3>
+                    Both Sessions
+                </h3>
+
+                <div class="price">
+                    ₹
+                    <strong>250</strong>
+                </div>
+
+                <p>
+                    PCB Design +
+                    LTspice.
+                </p>
+
+            </div>
+
 
         </div>
 
 
-        <div class="registration-note">
+        <!-- SEATS -->
 
-            PCB Design: ₹110 / ₹125
-            &nbsp; • &nbsp;
-            LTspice: ₹110 / ₹125
-            &nbsp; • &nbsp;
-            Both: ₹220 / ₹250
-
-            <br>
-
-            SPS Member / Non-SPS Member
-
-        </div>
-
-
-        <!-- =========================================
-             SEATS
-        ========================================== -->
-
-        <div class="seats reveal">
+        <div class="seats-box reveal">
 
             <div class="seat-number">
-
-                <span id="seatsLeft">
-                    0
-                </span>
-
+                35
             </div>
 
-
-            <div class="seat-text">
+            <div class="seat-title">
                 LIMITED SEATS AVAILABLE
             </div>
 
 
             <div class="progress">
 
-                <div
-                    class="progress-bar"
-                    id="progressBar">
-                </div>
+                <div class="progress-bar"></div>
 
             </div>
-
-
-            <br>
 
 
             <a
                 href="#"
                 class="btn btn-red"
-                id="registerBtn">
-
+                onclick="registerNow(event)"
+            >
                 REGISTER FOR PROTOX →
-
             </a>
+
+
+            <div class="registration-note">
+
+                Add your Google Form or
+                registration URL inside
+                the JavaScript section.
+
+            </div>
 
         </div>
 
@@ -3130,82 +2117,156 @@
 </section>
 
 
-<!-- =========================
-     CTA
-========================= -->
+<!-- =========================================
+     ORGANIZERS
+========================================= -->
 
-<section class="cta reveal">
+<section>
 
-    <h2>
+    <div class="container">
 
-        Ready to enter the
-        <span>circuit?</span>
+        <div class="section-heading reveal">
 
-    </h2>
+            <small>
+                ORGANIZED BY
+            </small>
 
+            <h2>
+                Our Organizations
+            </h2>
 
-    <p>
-
-        Design PCBs.
-        Simulate circuits.
-        Build your knowledge.
-
-    </p>
+        </div>
 
 
-    <a
-        href="#registration"
-        class="btn btn-red">
+        <div class="organizers">
 
-        SECURE YOUR SEAT →
 
-    </a>
+            <!-- IEEE -->
+
+            <div class="organization-card reveal">
+
+                <img
+                    src="logos/ieee.png"
+                    alt="IEEE"
+                >
+
+            </div>
+
+
+            <!-- IEEE SPS -->
+
+            <div class="organization-card reveal">
+
+                <img
+                    src="logos/ieee-sps.png"
+                    alt="IEEE Signal Processing Society"
+                >
+
+            </div>
+
+
+            <!-- JCMCSIIT -->
+
+            <div class="organization-card reveal">
+
+                <img
+                    src="logos/jcmc-siit.png"
+                    alt="IEEE Students Branch JCMCSIIT"
+                >
+
+            </div>
+
+
+        </div>
+
+    </div>
 
 </section>
 
 
-<!-- =========================
+<!-- =========================================
+     CTA
+========================================= -->
+
+<section class="cta reveal">
+
+    <div class="container">
+
+        <h2>
+            Ready to enter the
+            <span>circuit?</span>
+        </h2>
+
+        <p>
+            Design PCBs.
+            Simulate circuits.
+            Build your knowledge.
+        </p>
+
+        <a
+            href="#registration"
+            class="btn btn-red"
+        >
+            SECURE YOUR SEAT →
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
      FOOTER
-========================= -->
+========================================= -->
 
 <footer>
 
     <div class="footer-logos">
 
+
+        <!-- PROTOX -->
+
         <img
-            src="https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg"
+            class="protox-footer"
+            src="logos/protox.png"
+            alt="PROTOX³"
+        >
+
+
+        <!-- IEEE -->
+
+        <img
+            src="logos/ieee.png"
             alt="IEEE"
-            class="footer-logo"
         >
 
-        <img
-            src="https://signalprocessingsociety.org/sites/default/files/SPS_logo_white.png"
-            alt="IEEE SPS"
-            class="footer-logo"
-        >
+
+        <!-- SPS -->
 
         <img
-            src="https://via.placeholder.com/100x40/000000/FFFFFF?text=JCMC+SIIT"
-            alt="JCMC SIIT"
-            class="footer-logo"
+            src="logos/ieee-sps.png"
+            alt="IEEE Signal Processing Society"
         >
+
+
+        <!-- JCMCSIIT -->
+
+        <img
+            src="logos/jcmc-siit.png"
+            alt="IEEE Students Branch JCMCSIIT"
+        >
+
 
     </div>
 
 
     <p>
-
-        © 2026
-        <strong>PROTOX</strong>
-        — Inside the Circuit Board
-
+        © 2026 PROTOX³ —
+        Inside the Circuit Board
     </p>
 
-
-    <p style="margin-top:8px;">
-
+    <p>
         PCB Design • LTspice • Electronics
-
     </p>
 
 </footer>
@@ -3213,22 +2274,19 @@
 
 <script>
 
-
-/* =====================================================
-   BACKGROUND PARTICLES
-===================================================== */
+/* =========================================
+   CIRCUIT BACKGROUND
+========================================= */
 
 const canvas =
-    document.getElementById("bgCanvas");
+    document.getElementById("circuitCanvas");
 
 const ctx =
     canvas.getContext("2d");
 
-
 let width =
     canvas.width =
     window.innerWidth;
-
 
 let height =
     canvas.height =
@@ -3251,97 +2309,36 @@ window.addEventListener(
 );
 
 
-class Particle {
-
-    constructor() {
-
-        this.reset();
-
-    }
-
-
-    reset() {
-
-        this.x =
-            Math.random() * width;
-
-        this.y =
-            Math.random() * height;
-
-        this.size =
-            Math.random() * 2 + 0.5;
-
-        this.speedX =
-            (Math.random() - 0.5) * 0.5;
-
-        this.speedY =
-            (Math.random() - 0.5) * 0.5;
-
-        this.alpha =
-            Math.random() * 0.5 + 0.1;
-
-    }
-
-
-    update() {
-
-        this.x += this.speedX;
-
-        this.y += this.speedY;
-
-
-        if (
-            this.x < 0 ||
-            this.x > width ||
-            this.y < 0 ||
-            this.y > height
-        ) {
-
-            this.reset();
-
-        }
-
-    }
-
-
-    draw() {
-
-        ctx.fillStyle =
-            `rgba(
-                255,
-                0,
-                0,
-                ${this.alpha}
-            )`;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            this.x,
-            this.y,
-            this.size,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-    }
-
-}
-
-
-const particles =
+const nodes =
     Array.from(
-        {
-            length: 45
-        },
-        () =>
-            new Particle()
+        {length:55},
+        () => ({
+
+            x:
+                Math.random()
+                * width,
+
+            y:
+                Math.random()
+                * height,
+
+            radius:
+                Math.random()
+                * 2 + 1,
+
+            speedX:
+                (Math.random()-.5)
+                * .35,
+
+            speedY:
+                (Math.random()-.5)
+                * .35
+
+        })
     );
 
 
-function animateCanvas() {
+function drawCircuit(){
 
     ctx.clearRect(
         0,
@@ -3351,47 +2348,121 @@ function animateCanvas() {
     );
 
 
-    particles.forEach(
-        p => {
+    nodes.forEach(
+        node => {
 
-            p.update();
-            p.draw();
+            node.x +=
+                node.speedX;
+
+            node.y +=
+                node.speedY;
+
+
+            if(
+                node.x < 0 ||
+                node.x > width
+            ){
+                node.speedX *= -1;
+            }
+
+
+            if(
+                node.y < 0 ||
+                node.y > height
+            ){
+                node.speedY *= -1;
+            }
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                node.x,
+                node.y,
+                node.radius,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fillStyle =
+                "rgba(255,0,0,.45)";
+
+            ctx.fill();
+
+
+            nodes.forEach(
+                other => {
+
+                    const dx =
+                        node.x -
+                        other.x;
+
+                    const dy =
+                        node.y -
+                        other.y;
+
+                    const distance =
+                        Math.sqrt(
+                            dx*dx +
+                            dy*dy
+                        );
+
+
+                    if(
+                        distance < 130 &&
+                        distance > 20
+                    ){
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(
+                            node.x,
+                            node.y
+                        );
+
+                        ctx.lineTo(
+                            other.x,
+                            other.y
+                        );
+
+                        ctx.strokeStyle =
+                            "rgba(255,0,0,.055)";
+
+                        ctx.stroke();
+
+                    }
+
+                }
+            );
 
         }
     );
 
 
     requestAnimationFrame(
-        animateCanvas
+        drawCircuit
     );
 
 }
 
 
-animateCanvas();
+drawCircuit();
 
 
-/* =====================================================
+/* =========================================
    SCROLL REVEAL
-===================================================== */
+========================================= */
 
-const revealElements =
-    document.querySelectorAll(
-        ".reveal"
-    );
-
-
-const revealObserver =
+const observer =
     new IntersectionObserver(
-
         entries => {
 
             entries.forEach(
                 entry => {
 
-                    if (
+                    if(
                         entry.isIntersecting
-                    ) {
+                    ){
 
                         entry.target
                             .classList
@@ -3403,287 +2474,51 @@ const revealObserver =
             );
 
         },
-
         {
-            threshold: 0.12
+            threshold:.12
         }
-
     );
 
-
-revealElements.forEach(
-    element => {
-
-        revealObserver.observe(
-            element
-        );
-
-    }
-);
-
-
-/* =====================================================
-   SEAT COUNTER
-===================================================== */
-
-const targetSeats = 35;
-
-let currentSeats = 0;
-
-let counterStarted = false;
-
-
-const seatElement =
-    document.getElementById(
-        "seatsLeft"
-    );
-
-
-const progressBar =
-    document.getElementById(
-        "progressBar"
-    );
-
-
-const seatsSection =
-    document.querySelector(
-        ".seats"
-    );
-
-
-const seatObserver =
-    new IntersectionObserver(
-
-        entries => {
-
-            if (
-                entries[0].isIntersecting &&
-                !counterStarted
-            ) {
-
-                counterStarted = true;
-
-
-                const counter =
-                    setInterval(
-                        () => {
-
-                            currentSeats++;
-
-
-                            seatElement.innerText =
-                                currentSeats;
-
-
-                            const percentage =
-                                (
-                                    currentSeats /
-                                    targetSeats
-                                ) * 100;
-
-
-                            progressBar.style.width =
-                                percentage + "%";
-
-
-                            if (
-                                currentSeats >=
-                                targetSeats
-                            ) {
-
-                                clearInterval(
-                                    counter
-                                );
-
-                            }
-
-                        },
-                        40
-                    );
-
-            }
-
-        },
-
-        {
-            threshold: .4
-        }
-
-    );
-
-
-seatObserver.observe(
-    seatsSection
-);
-
-
-/* =====================================================
-   GOOGLE FORM REGISTRATION
-===================================================== */
-
-
-/*
-    PUT YOUR GOOGLE FORM LINK HERE.
-
-    Example:
-
-    const registrationURL =
-        "https://forms.gle/XXXXXXXXXXXX";
-*/
-
-const registrationURL = "#";
-
-
-/*
-    Individual registration buttons
-*/
 
 document
-    .querySelectorAll(
-        ".register-btn"
-    )
+    .querySelectorAll(".reveal")
     .forEach(
-        button => {
+        element => {
 
-            button.addEventListener(
-                "click",
-                function(e) {
-
-                    e.preventDefault();
-
-
-                    const workshop =
-                        this.dataset.workshop;
-
-
-                    const category =
-                        this.dataset.category;
-
-
-                    if (
-                        registrationURL === "#"
-                    ) {
-
-                        alert(
-
-                            "PROTOX REGISTRATION\n\n" +
-
-                            "Category: " +
-                            category +
-
-                            "\nWorkshop: " +
-                            workshop +
-
-                            "\n\n" +
-
-                            "Add your Google Form link " +
-                            "to registrationURL in the JavaScript."
-
-                        );
-
-                    }
-
-                    else {
-
-                        window.open(
-                            registrationURL,
-                            "_blank"
-                        );
-
-                    }
-
-                }
+            observer.observe(
+                element
             );
 
         }
     );
 
 
-/*
-    Main registration button
-*/
-
-document
-    .getElementById(
-        "registerBtn"
-    )
-    .addEventListener(
-        "click",
-        function(e) {
-
-            e.preventDefault();
-
-
-            if (
-                registrationURL === "#"
-            ) {
-
-                alert(
-
-                    "PROTOX REGISTRATION\n\n" +
-
-                    "Select your membership category " +
-                    "and workshop above.\n\n" +
-
-                    "Add your Google Form link " +
-                    "to registrationURL in the JavaScript."
-
-                );
-
-            }
-
-            else {
-
-                window.open(
-                    registrationURL,
-                    "_blank"
-                );
-
-            }
-
-        }
-    );
-
-
-/* =====================================================
-   NAVBAR SCROLL EFFECT
-===================================================== */
+/* =========================================
+   NAVBAR SCROLL
+========================================= */
 
 window.addEventListener(
     "scroll",
-    function() {
+    () => {
 
         const nav =
-            document.querySelector(
-                "nav"
+            document.getElementById(
+                "navbar"
             );
 
 
-        if (
-            window.scrollY > 50
-        ) {
+        if(
+            window.scrollY > 40
+        ){
 
             nav.style.background =
-                "rgba(0,0,0,0.95)";
-
-            nav.style.borderColor =
-                "rgba(255,0,0,0.4)";
-
-            nav.style.boxShadow =
-                "0 5px 20px rgba(0,0,0,0.8)";
+                "rgba(0,0,0,.97)";
 
         }
-
-        else {
+        else{
 
             nav.style.background =
-                "rgba(5,5,5,0.85)";
-
-            nav.style.borderColor =
-                "rgba(255,0,0,0.2)";
-
-            nav.style.boxShadow =
-                "none";
+                "rgba(3,3,3,.88)";
 
         }
 
@@ -3691,9 +2526,101 @@ window.addEventListener(
 );
 
 
+/* =========================================
+   MOBILE MENU
+========================================= */
+
+function toggleMenu(){
+
+    const links =
+        document.querySelector(
+            ".nav-links"
+        );
+
+
+    if(
+        links.style.display ===
+        "flex"
+    ){
+
+        links.style.display =
+            "none";
+
+    }
+    else{
+
+        links.style.position =
+            "absolute";
+
+        links.style.top =
+            "70px";
+
+        links.style.right =
+            "20px";
+
+        links.style.padding =
+            "20px";
+
+        links.style.background =
+            "#080808";
+
+        links.style.border =
+            "1px solid rgba(255,0,0,.3)";
+
+        links.style.flexDirection =
+            "column";
+
+        links.style.display =
+            "flex";
+
+    }
+
+}
+
+
+/* =========================================
+   REGISTRATION
+========================================= */
+
+function registerNow(event){
+
+    event.preventDefault();
+
+
+    /*
+       PUT YOUR GOOGLE FORM URL HERE
+
+       Example:
+
+       const registrationURL =
+       "https://forms.gle/XXXXXXXX";
+
+    */
+
+    const registrationURL = "";
+
+
+    if(
+        registrationURL !== ""
+    ){
+
+        window.open(
+            registrationURL,
+            "_blank"
+        );
+
+    }
+    else{
+
+        alert(
+            "Add your registration form URL in the registrationURL variable."
+        );
+
+    }
+
+}
+
 </script>
 
-
 </body>
-
 </html>
