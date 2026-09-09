@@ -1076,15 +1076,10 @@
       document.getElementById('navLinks').classList.remove('show');
     }
 
-    // ===== REGISTRATION =====
+    // ===== REGISTRATION (popup message) =====
     function registerNow(event) {
       event.preventDefault();
-      const registrationURL = 'https://forms.gle/MvEbZDTbCoprNAqe6';
-      if (registrationURL !== '') {
-        window.open(registrationURL, '_blank');
-      } else {
-        alert('Add your registration form URL in the registrationURL variable.');
-      }
+      alert('Registration has not started yet. Please check back later!');
     }
   </script>
 </body>
